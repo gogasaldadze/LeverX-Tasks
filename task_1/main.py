@@ -3,12 +3,17 @@ from typing import Tuple
 import re
 
 
-@dataclass(order=True)   # basically initializing comparison dunder methods just by setting order=True
+@dataclass(order=True)
 class Version:
-    comparison_field: Tuple = field(init=False, repr=False)      
-    comparison_object: str
+    comparison_field: Tuple = field(init=False, repr=False)
+    comparison_object: str = field(compare=False)
 
-    acceptable_pattern = re.compile(    # Suggested Regex found in FAQ: https://regex101.com/r/Ly7O1x/3 
+    RELEASE = 1
+    PRERELEASE = 0
+    STRING = 1
+    NUMERIC = 0
+
+    acceptable_pattern = re.compile(
         r"^(?P<major>0|[1-9]\d*)\."
         r"(?P<minor>0|[1-9]\d*)\."
         r"(?P<patch>0|[1-9]\d*)"
@@ -17,58 +22,74 @@ class Version:
     )
 
     def __post_init__(self):
-        normalized = self.normalization()   # no need to provide self.comparison_object, because i already did it in normalization() method.
+        normalized = self.normalization()
         match = self.acceptable_pattern.match(normalized)
 
         if not match:
-            raise ValueError (f'Invalid Semantic version {self.comparison_object}')
-        
+            raise ValueError(f"Invalid Semantic version {self.comparison_object}")
+
         # matching major/minor/patch/prerelease
 
-        major = int(match.group('major'))
-        minor = int(match.group('minor'))
-        patch = int(match.group('patch'))
-        prerelease = match.group('prerelease')
+        major = int(match.group("major"))
+        minor = int(match.group("minor"))
+        patch = int(match.group("patch"))
+        prerelease = match.group("prerelease")
 
-        normalized_prerelease = prerelease if prerelease is not None else 'z'  # assigned 'z' so its always higher than any prerelase char  (release > prerelease, eg:1.0.0-alpha, 1.0.0-beta )
+        normalized_prerelease = self.parse_prerelease(prerelease)
+
+        # This field is used for ordering/comparison of version objects
         self.comparison_field = (major, minor, patch, normalized_prerelease)
 
-
     def normalization(self):
-        new = ''
+        """
+        Normalizes version strings to standard SemVer format.
+        1. Ensures hyphen before prerelease (1.0.0alpha -> 1.0.0-alpha)
+        2. Converts letters to lowercase
+        3. Preserves existing hyphens and dots
 
-        for char in self.comparison_object:   
+        """
+
+        new = ""
+
+        for char in self.comparison_object:
             if char.isalpha():
-                if new and new[-1].isdigit():  # tryna check if new is not empty alongside with if the last existed char is digit
-                    new += '-'
-                new += char.lower() 
+                if new and new[-1].isdigit():
+                    new += "-"
+                new += char.lower()
             else:
                 new += char
 
         return new
 
+    def parse_prerelease(self, prerelease):
+        """
+        Parses the prerelease string into a structured format.
+        Rules:
+            if no prerelease presented, its considered as a full release (therefore RELEASE = 1)
+            otherwise, split prerelease by "." (if presented) or digit boundaries.
+            lastly, each component is marked as numeric or string for comparison purposes .
 
-# print(Version('1.1.3') < Version('2.2.3'))
-# print(Version('1.3.0') > Version('0.3.0'))
-# print(Version('0.3.0b') < Version('1.2.42'))
-# print(Version('1.3.42') == Version('42.3.1'))
+            Examples:
+            'alpha.1' -> (PRERELEASE, [(STRING, 'alpha'), (NUMERIC, 1)])
+            'rc1'     -> (PRERELEASE, [(STRING, 'rc'), (NUMERIC, 1)])
+            None      -> (RELEASE, ())
+        """
+        if prerelease is None:
+            return (self.RELEASE, ())
 
-def main():
-    to_test = [
-        ("1.0.0", "2.0.0"),
-        ("1.0.0", "1.42.0"),
-        ("1.2.0", "1.2.42"),
-        ("1.1.0-alpha", "1.2.0-alpha.1"),
-        ("1.0.1b", "1.0.10-alpha.beta"),
-        ("1.0.0-rc.1", "1.0.0"),
-    ]
+        if "." in prerelease:
+            parts = prerelease.split(".")
 
-    for left, right in to_test:
-        assert Version(left) < Version(right), "le failed"
-        assert Version(right) > Version(left), "ge failed"
-        assert Version(right) != Version(left), "neq failed"
+        else:
+            parts = re.split(r"(?<=\D)(?=\d)", prerelease)
 
-    print('all tests passed')
+        components = list()
 
-if __name__ == "__main__":
-    main()
+        for part in parts:
+
+            if part.isdigit():
+                components.append(((self.NUMERIC, int(part))))
+            else:
+                components.append((self.STRING, part.lower()))
+
+        return (self.PRERELEASE, tuple(components))
