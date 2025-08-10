@@ -1,0 +1,5 @@
+from .count_students_in_room import CountStudentsInRoom
+from .largest_age_difference import LargestAgeDifference
+from .smallest_average_age import SmallestAverageAge
+from .students_different_sex import StudentDifferentSex
+from .base import BaseAnalysis
