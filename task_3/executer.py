@@ -1,4 +1,7 @@
-from configurator.connection import ConnectionManager
+import json
+from config.db_config import load_config
+
+from core.connection import ConnectionManager
 from queries import (
     CountStudentsInRoom,
     LargestAgeDifference,
@@ -7,9 +10,11 @@ from queries import (
 )
 
 
-def execute(selected_query):
+def execute(selected_query, host, user, password, database):
 
-    db_connection = ConnectionManager().get_connection_with_db("task_3_db")
+    db_connection = ConnectionManager(host, user, password).get_connection_with_db(
+        database
+    )
 
     analysis_classes = {
         "largest_age_difference": LargestAgeDifference,
