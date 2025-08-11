@@ -10,12 +10,14 @@ if __name__ == "__main__":
         1. Please cd task_3 
         
 
-        2. To initialize db you need to add connection to mysql (using workbench Will simplify the process)
-            Please either use connection parameters provided in configurator/create_database file (host=localhost, user=root, password=3434) or use yours as prefered.)
+        2. To initialize db, Firstly you need to add connection to mysql (using workbench Will simplify the process)
+           Please keep in mind, you need to use your Mysql user Password, otherwise it returns "Connection failed: Access Denied" 
+           Connection name and Username can be default: localhost, root ( can be different, if you grant access to other users)
+           
 
         3. there are two commands availabe to run: - initdb  
                                                    - execute 
-            by running --> py main.py initdb <-- we initialize whole process:  
+            by running --> uv run py main.py initdb <-- we initialize whole process:  
                                                                             Connection to mysql server, 
                                                                             Creating database,
                                                                             Connection to database,
@@ -35,7 +37,7 @@ if __name__ == "__main__":
                                                       smallest_average_age,
                                                       different_sex_in_room, 
 
-            Full command would look like this:  --> py main.py execute smallest_average_age  <--
+            Full command would look like this:  --> uv run py main.py execute smallest_average_age  <--
 
 
 
