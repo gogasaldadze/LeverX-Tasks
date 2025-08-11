@@ -1,6 +1,3 @@
-import json
-from config.db_config import load_config
-
 from core.connection import ConnectionManager
 from queries import (
     CountStudentsInRoom,

@@ -1,7 +1,5 @@
 from .base import BaseSchema
 
-import mysql.connector
-
 
 class StudentSchema(BaseSchema):
 

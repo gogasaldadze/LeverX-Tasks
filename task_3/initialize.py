@@ -3,8 +3,7 @@ from core.create_database import CreateDataBase
 from schema import RoomSchema, StudentSchema, IndexManager
 from data_loader import RoomsDataLoader, StudentDataLoader
 from data_inserter import RoomInserter, StudentInserter
-import getpass
-import sys
+
 from config.db_config import save_config
 
 
