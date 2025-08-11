@@ -1,6 +1,8 @@
 import argparse
+import getpass
 from initialize import initializer
 from executer import execute
+from config.db_config import load_config
 
 
 def run_cli():
@@ -26,9 +28,25 @@ def run_cli():
     args = parser.parse_args()
 
     if args.command == "initdb":
-        return initializer()
+        host = input("Enter MySQL host (default 'localhost'): ") or "localhost"
+        user = input("Enter MySQL user (default 'root'): ") or "root"
+        password = getpass.getpass("Enter your MySQL password: ")
+        database = input("Enter database name (default 'task_3_db'): ") or "task_3_db"
+
+        return initializer(host, user, password, database)
+
     elif args.command == "execute":
-        return execute(args.query_name)
+        config = load_config()
+        if config is None:
+            print("Config file not found. Please run 'initdb' first.")
+            return
+
+        host = config.get("host")
+        user = config.get("user")
+        password = config.get("password")
+        database = config.get("database")
+
+        return execute(args.query_name, host, user, password, database)
 
 
 if __name__ == "__main__":
