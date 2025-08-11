@@ -1,4 +1,4 @@
-from src.cli import main
+from src.cli.runner import run
 
 
 """
@@ -25,4 +25,4 @@ To run the script, Use commands:
 
 
 if __name__ == "__main__":
-    main()
+    run()
