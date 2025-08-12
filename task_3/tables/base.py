@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class BaseInserter(ABC):
+class BaseSchema(ABC):
     def __init__(self, connection):
         self.connection = connection
         self.cursor = self.connection.cursor()
@@ -10,7 +10,15 @@ class BaseInserter(ABC):
         return self
 
     @abstractmethod
-    def insert(self, data):
+    def create_students_table(self):
+        pass
+
+    @abstractmethod
+    def create_rooms_table(self):
+        pass
+
+    @abstractmethod
+    def create_indexes(self):
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -1,51 +1,43 @@
-from core.connection import ConnectionManager
-from core.create_database import CreateDataBase
-from schema import RoomSchema, StudentSchema, IndexManager
-from data_loader import RoomsDataLoader, StudentDataLoader
-from data_inserter import RoomInserter, StudentInserter
+from core.database_manager import DBManager
+from tables.table_manager import TableManager
+from data.data_loader import DataLoader
+from data.data_inserter import DataInserter
 
-from config.db_config import save_config
+
+def prepare_database(host, user, password, database):
+    db_manager = DBManager(host, user, password)
+
+    db_manager.create_database(database)
+    print(f"{database} successfully created")
+
+    connection = db_manager.get_connection_with_db(database)
+    print(f"Successfully connected to {database}")
+    return connection
+
+
+def setup_tables(connection):
+
+    with TableManager(connection) as table_manager:
+        table_manager.create_all()
+        print("All tables and indexes created!")
+
+
+def load_and_insert_data(connection):
+
+    loader = DataLoader()
+    rooms = loader.load_rooms()
+    students = loader.load_students()
+
+    with DataInserter(connection) as inserter:
+        inserter.insert_rooms_data(rooms)
+        inserter.insert_students_data(students)
+    print("Initial data inserted!")
 
 
 def initializer(host, user, password, database):
-    #  Connect WITHOUT database to create database
-    raw_connection = ConnectionManager(host, user, password).get_connection()
-    print("SQL server connection Established ! ")
+    """whole database setup process"""
+    connection = prepare_database(host, user, password, database)
+    setup_tables(connection)
+    load_and_insert_data(connection)
 
-    # Database Create
-    CreateDataBase(raw_connection, database).create()
-    raw_connection.close()
-
-    #  Connect WITH database to work with tables and data
-    db_connection = ConnectionManager(host, user, password).get_connection_with_db(
-        database
-    )
-    print(f"Successfully connected to {database}")
-
-    #  Create tables
-    with RoomSchema(db_connection) as room_schema:
-        room_schema.create()
-        print("rooms Table Created ! ")
-    with StudentSchema(db_connection) as student_schema:
-        student_schema.create()
-        print("students Table Created ! ")
-
-    #  Create Indexes
-    with IndexManager(db_connection) as index:
-        index.create()
-
-    #  Load data
-    rooms = RoomsDataLoader().load()
-    students = StudentDataLoader().load()
-
-    #  Insert data
-    with RoomInserter(db_connection) as room_inserter:
-        room_inserter.insert(rooms)
-    with StudentInserter(db_connection) as student_inserter:
-        student_inserter.insert(students)
-
-    # save config
-    save_config(host, user, password, database)
-
-    #  Close the DB connection
-    db_connection.close()
+    connection.close()

@@ -10,7 +10,12 @@ class BaseSchema(ABC):
         return self
 
     @abstractmethod
-    def create(self):
+    def insert_rooms_data(self, rooms):
+        pass
+
+    @abstractmethod
+    def insert_students_data(self, students):
+
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):

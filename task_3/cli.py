@@ -1,8 +1,8 @@
 import argparse
 import getpass
 from initialize import initializer
-from executer import execute
-from config.db_config import load_config
+from queries.executer import execute
+from config.env_config import save_to_env, load_config
 
 
 def run_cli():
@@ -28,10 +28,12 @@ def run_cli():
     args = parser.parse_args()
 
     if args.command == "initdb":
-        host = input("Enter MySQL host (default 'localhost'): ") or "localhost"
-        user = input("Enter MySQL user (default 'root'): ") or "root"
+        host = input("Enter MySQL host (default 'localhost'):") or "localhost"
+        user = input("Enter MySQL user (default 'root'):") or "root"
         password = getpass.getpass("Enter your MySQL password: ")
-        database = input("Enter database name (default 'task_3_db'): ") or "task_3_db"
+        database = input("Enter database name (default 'task_3_db'):") or "task_3_db"
+
+        save_to_env(host, user, password, database)
 
         return initializer(host, user, password, database)
 
