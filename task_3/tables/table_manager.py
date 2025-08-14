@@ -2,34 +2,34 @@ from .base import BaseSchema
 
 
 class TableManager(BaseSchema):
-
-    def create_students_table(self):
+    def create_table(self):
         self.cursor.execute("DROP TABLE IF EXISTS students")
-        self.cursor.execute(
-            """                 
-        CREATE TABLE IF NOT EXISTS students (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            birthday DATE NOT NULL,
-            sex ENUM('M', 'F') NOT NULL,
-            room_id INT,
-            FOREIGN KEY (room_id) REFERENCES rooms(id)
-            ON DELETE SET NULL
-            ON UPDATE CASCADE
-                            )
-                            """
-        )
-        self.connection.commit()
+        self.cursor.execute("DROP TABLE IF EXISTS rooms")
 
-    def create_rooms_table(self):
         self.cursor.execute(
             """
-        CREATE TABLE IF NOT EXISTS rooms (
-            id INT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        )
+            CREATE TABLE IF NOT EXISTS rooms (
+                id INT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL UNIQUE
+            )
         """
         )
+
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS students (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                birthday DATE NOT NULL,
+                sex ENUM('M', 'F') NOT NULL,
+                room_id INT DEFAULT NULL,
+                FOREIGN KEY (room_id) REFERENCES rooms(id)
+                    ON DELETE SET NULL
+                    ON UPDATE CASCADE
+            )
+        """
+        )
+
         self.connection.commit()
 
     def create_indexes(self):
@@ -45,6 +45,5 @@ class TableManager(BaseSchema):
 
     def create_all(self):
 
-        self.create_rooms_table()
-        self.create_students_table()
+        self.create_table()
         self.create_indexes()

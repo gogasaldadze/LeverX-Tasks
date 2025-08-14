@@ -10,11 +10,7 @@ class BaseSchema(ABC):
         return self
 
     @abstractmethod
-    def create_students_table(self):
-        pass
-
-    @abstractmethod
-    def create_rooms_table(self):
+    def create_table(self):
         pass
 
     @abstractmethod
