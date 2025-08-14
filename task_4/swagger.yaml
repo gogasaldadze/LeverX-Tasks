@@ -1,0 +1,800 @@
+openapi: 3.0.0
+info:
+  title: Student and Room management API
+  description: API for managing students, rooms, and room assignments
+  version: 1.0.0
+
+tags:
+  - name: Students
+    description: Operations related to student management
+  - name: Rooms
+    description: Operations related to room management
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /students:
+    get:
+      tags: [Students]
+      summary: List all students
+      responses:
+        200:
+          description: A list of students
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentListResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Students]
+      summary: Create a new student
+      description: Creates a new student with the provided details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateRequest'
+      responses:
+        201:
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+              examples:
+                student:
+                  summary: Example of created student
+                  value:
+                    success: true
+                    data:
+                      id: "550e8400-e29b-41d4-a716-446655440004"
+                      name: "John"
+                      lastName: "Doe"
+                      roomId: "550e8400-e29b-41d4-a716-446655440001"
+                      createdAt: "2025-08-14T10:00:00Z"
+                      updatedAt: "2025-08-14T10:00:00Z"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDenied'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /students/{id}:
+    get:
+      tags: [Students]
+      summary: Retrieve a student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFoundStudent'
+        500:
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [Students]
+      summary: Update a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+      responses:
+        200:
+          description: Student updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDeniedPut'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Students]
+      summary: Delete a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Student deleted successfully
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDeniedDelete'
+        404:
+          $ref: '#/components/responses/NotFoundStudent'
+
+  /rooms:
+    get:
+      tags: [Rooms]
+      summary: List all rooms
+      description: Returns a paginated list of all rooms
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        200:
+          description: A list of rooms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomListResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Rooms]
+      summary: Create a new room
+      description: Creates a new room record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomCreateRequest'
+      responses:
+        201:
+          description: Room created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        400:
+          $ref: '#/components/responses/BadRequestRoom'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDeniedRoom'
+        409:
+          $ref: '#/components/responses/ConflictRoom'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /rooms/{roomId}:
+    get:
+      tags: [Rooms]
+      summary: Get a room by ID
+      description: Returns a single room by its ID
+      parameters:
+        - $ref: '#/components/parameters/roomId'
+      responses:
+        200:
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFoundRoom'
+        500:
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [Rooms]
+      summary: Update a room
+      description: Updates an existing room record
+      parameters:
+        - $ref: '#/components/parameters/roomId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomUpdateRequest'
+      responses:
+        200:
+          description: Room updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        400:
+          $ref: '#/components/responses/BadRequestRoom'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFoundRoom'
+        500:
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Rooms]
+      summary: Delete a room
+      description: Deletes a room record
+      parameters:
+        - $ref: '#/components/parameters/roomId'
+      responses:
+        204:
+          description: Room deleted successfully
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDeniedRoom'
+        404:
+          $ref: '#/components/responses/NotFoundRoom'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /rooms/{roomId}/students:
+    get:
+      tags: [Rooms]
+      summary: Get students in a room
+      description: Returns all students assigned to a specific room
+      parameters:
+        - $ref: '#/components/parameters/roomId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        200:
+          description: List of students in the room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentListResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFoundRoom'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /students/{studentId}/assign-room/{roomId}:
+    post:
+      tags: [Admin]
+      summary: Assign student to a room
+      description: Moves a student from their current room to a new one
+      parameters:
+        - $ref: '#/components/parameters/studentId'
+        - $ref: '#/components/parameters/roomId'
+      responses:
+        200:
+          description: Student assigned to room successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/PermissionDenied'
+        404:
+          $ref: '#/components/responses/NotFoundStudentorRoom'
+        422:
+          description: Room is at capacity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Student:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "Goga"
+        lastName:
+          type: string
+          example: "Saldadze"
+        roomId:
+          type: string
+          format: uuid
+          nullable: true
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T12:00:00Z"
+
+    StudentCreateRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - dateOfBirth
+      properties:
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@university.edu"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+        roomId:
+          type: string
+          format: uuid
+          nullable: true
+          example: "550e8400-e29b-41d4-a716-446655440001"
+
+    StudentUpdateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@university.edu"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+
+    StudentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Student'
+
+    StudentListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Student'
+      example:
+        count: 3
+        results:
+          - id: "550e8400-e29b-41d4-a716-446655440000"
+            name: "Goga"
+            lastName: "Saldadze"
+            roomId: "550e8400-e29b-41d4-a716-446655440001"
+            createdAt: "2025-01-01T12:00:00Z"
+            updatedAt: "2025-01-01T12:00:00Z"
+          - id: "550e8400-e29b-41d4-a716-446655440002"
+            name: "Ana"
+            lastName: "Beridze"
+            roomId: "550e8400-e29b-41d4-a716-446655440001"
+            createdAt: "2025-02-01T12:00:00Z"
+            updatedAt: "2025-02-01T12:00:00Z"
+          - id: "550e8400-e29b-41d4-a716-446655440003"
+            name: "Nika"
+            lastName: "Kobaladze"
+            roomId: "550e8400-e29b-41d4-a716-446655440005"
+            createdAt: "2024-03-01T12:00:00Z"
+            updatedAt: "2025-03-01T12:00:00Z"
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        name:
+          type: string
+          example: "Room 101"
+        building:
+          type: string
+          example: "Main Building"
+        capacity:
+          type: integer
+          example: 30
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-01T12:00:00Z"
+
+    RoomCreateRequest:
+      type: object
+      required:
+        - name
+        - building
+        - capacity
+      properties:
+        name:
+          type: string
+          example: "Room 101"
+        building:
+          type: string
+          example: "Main Building"
+        capacity:
+          type: integer
+          minimum: 1
+          example: 30
+
+    RoomUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Room 101"
+        building:
+          type: string
+          example: "Main Building"
+        capacity:
+          type: integer
+          minimum: 1
+          example: 30
+
+    RoomResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Room'
+
+    RoomListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      example:
+        success: true
+        data:
+          - id: "550e8400-e29b-41d4-a716-446655440001"
+            name: "Room 101"
+            building: "Main Building"
+            capacity: 30
+            currentOccupancy: 15
+            createdAt: "2024-01-01T12:00:00Z"
+            updatedAt: "2025-01-01T12:00:00Z"
+          - id: "660f9500-f39c-42d9-b123-556655440002"
+            name: "Room 202"
+            building: "Science Wing"
+            capacity: 25
+            currentOccupancy: 20
+            createdAt: "2024-02-05T09:30:00Z"
+            updatedAt: "2025-02-06T14:15:00Z"
+          - id: "770a8400-a19d-41d4-c888-446655440003"
+            name: "Room 303"
+            building: "Library Annex"
+            capacity: 40
+            currentOccupancy: 38
+            createdAt: "2024-03-12T08:45:00Z"
+            updatedAt: "2025-03-15T16:20:00Z"
+        pagination:
+          total: 3
+          page: 1
+          pageSize: 10
+          totalPages: 1
+
+    RoomAssignmentRequest:
+      type: object
+      required:
+        - roomId
+        - studentId
+      properties:
+        roomId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+          description: "ID of the room to assign the student to"
+        studentId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: "ID of the student being assigned"
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 10
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "ROOM_FULL"
+            message:
+              type: string
+              example: "The requested room is at full capacity"
+            details:
+              type: string
+              nullable: true
+              example: "Room {roomId} has reached its capacity of 30 students"
+
+  parameters:
+    studentId:
+      name: studentId
+      in: path
+      description: ID of the student
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    roomId:
+      name: roomId
+      in: path
+      description: ID of the room
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    page:
+      name: page
+      in: query
+      description: Page number for pagination
+      required: false
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+
+    pageSize:
+      name: pageSize
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "VALIDATION_ERROR"
+              message: "Invalid request data"
+              details: "name and surname must be a Unique"
+
+    Unauthorized:
+      description: Missing or invalid authentication credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "Authentication required"
+              details: "Missing or invalid JWT token"
+
+    PermissionDenied:
+      description: User does not have permission to perform this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "PERMISSION_DENIED"
+              message: "You do not have permission"
+              details: "Requires 'admin' role"
+
+    PermissionDeniedPut:
+      description: User does not have permission to perform this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "PERMISSION_DENIED"
+              message: "You do not have permission to Update students"
+              details: "Requires 'admin' role"
+
+    PermissionDeniedDelete:
+      description: User does not have permission to perform this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "PERMISSION_DENIED"
+              message: "You do not have permission to delete students"
+              details: "Requires 'admin' role"
+
+    NotFoundStudent:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "NOT_FOUND"
+              message: "Student not found"
+              details: "No student found with ID 550e8400-e29b-41d4-a716-446655440000"
+
+    NotFoundStudentorRoom:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "NOT_FOUND"
+              message: "Student not found"
+              details: "Student or room does not exist"
+
+    NotFoundRoom:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "NOT_FOUND"
+              message: "Room not found"
+              details: "No Room found with specified ID"
+
+    BadRequestRoom:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "VALIDATION_ERROR"
+              message: "Invalid request data"
+              details: "Capacity exceeded 30"
+
+    PermissionDeniedRoom:
+      description: User does not have permission to perform this action
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "PERMISSION_DENIED"
+              message: "You do not have permission to create Room"
+              details: "Requires 'admin' role"
+
+    ConflictRoom:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "CONFLICT"
+              message: "Resource already exists"
+              details: "A room with this name already exists"
+
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "CONFLICT"
+              message: "Resource already exists"
+              details: "A student with this email already exists"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "SERVER_ERROR"
+              message: "Internal server error"
+              details: "An unexpected error occurred"
