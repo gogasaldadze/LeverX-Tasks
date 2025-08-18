@@ -1,49 +1,23 @@
-from .base import BaseSchema
+from .students import StudentTable
+from .rooms import RoomTable
 
 
-class TableManager(BaseSchema):
-    def create_table(self):
-        self.cursor.execute("DROP TABLE IF EXISTS students")
-        self.cursor.execute("DROP TABLE IF EXISTS rooms")
+class TableManager:
+    def __init__(self, connection):
+        self.connection = connection
+        self.room_table = RoomTable(connection)
+        self.student_table = StudentTable(connection)
 
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS rooms (
-                id INT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL UNIQUE
-            )
-        """
-        )
-
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS students (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                birthday DATE NOT NULL,
-                sex ENUM('M', 'F') NOT NULL,
-                room_id INT DEFAULT NULL,
-                FOREIGN KEY (room_id) REFERENCES rooms(id)
-                    ON DELETE SET NULL
-                    ON UPDATE CASCADE
-            )
-        """
-        )
-
-        self.connection.commit()
-
-    def create_indexes(self):
-
-        # index on students.room_id
-        self.cursor.execute("CREATE INDEX idx_students_room_id ON students(room_id);")
-
-        # index on students.birthday
-        self.cursor.execute("CREATE INDEX idx_students_birthday ON students(birthday)")
-
-        print("Indexes Created Successfully : students.room_id, students.birthday ")
-        self.connection.commit()
+    def __enter__(self):
+        return self
 
     def create_all(self):
+        # create tables
+        self.room_table.create_table()
+        self.student_table.create_table()
 
-        self.create_table()
-        self.create_indexes()
+        # create indexes
+        self.student_table.create_indexes()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.commit()

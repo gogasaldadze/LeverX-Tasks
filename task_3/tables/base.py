@@ -13,9 +13,5 @@ class BaseSchema(ABC):
     def create_table(self):
         pass
 
-    @abstractmethod
-    def create_indexes(self):
-        pass
-
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.cursor.close()
