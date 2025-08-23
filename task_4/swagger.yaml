@@ -1,9 +1,15 @@
 openapi: 3.0.0
 info:
   title: Student and Room management API
-  description: API for managing students, rooms, and room assignments
+  description: API for managing students, rooms, and room assignments. Includes pagination, filtering, and sorting.
   version: 1.0.0
+  contact:
+    name: Giorgi Saldadze
+    email: saldadzegoga@gmail.com
 
+servers:
+  - url: https://api.studentrooms.com/api/v1-beta/
+    description: Development
 tags:
   - name: Students
     description: Operations related to student management
@@ -794,7 +800,3 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             success: false
-            error:
-              code: "SERVER_ERROR"
-              message: "Internal server error"
-              details: "An unexpected error occurred"
